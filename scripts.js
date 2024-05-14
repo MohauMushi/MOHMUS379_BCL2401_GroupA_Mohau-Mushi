@@ -361,64 +361,72 @@ function renderBookPreview(book) {
     return result;
   }
   
+  
+  /**
+ * Function it Renders additional book previews on the page.
+ *
+ * This function is responsible for appending new book preview elements to the page
+ * based on the current page number and the matches array.
+ */
+  function renderAdditionalBookPreviews() {
+    const fragment = document.createDocumentFragment();
+    for (const book of matches.slice(page * BOOKS_PER_PAGE, (page + 1) * BOOKS_PER_PAGE)) {
+      const bookPreviewElement = renderBookPreview(book);
+      fragment.appendChild(bookPreviewElement);
+    }
+    data.list.items.appendChild(fragment);
+    page += 1;
+  }
+  
+  /**
+ * Functions it Handles the click event on book previews.
+ *
+ * @param {Event} event - The click event object.
+ */
+  function handleBookPreviewClick(event) {
+    const pathArray = Array.from(event.path || event.composedPath());
+    let active = null;
+    for (const node of pathArray) {
+      if (active) break;
+      if (node?.dataset?.preview) {
+        let result = null;
+        for (const singleBook of books) {
+          if (result) break;
+          if (singleBook.id === node?.dataset?.preview) result = singleBook;
+        }
+        active = result;
+      }
+    }
+  
+    if (active) {
+      updateActiveBookDetails(active);
+    }
+  }
+  
+  // Function to update active book details
+  /**
+ * Updates the active book details section with the provided book information.
+ *
+ * @param {Object} book - The book object containing the details to be displayed.
+ * @param {string} book.image - The URL of the book's cover image.
+ * @param {string} book.title - The title of the book.
+ * @param {string} book.author - The identifier of the book's author.
+ * @param {string} book.published - The publication date of the book.
+ * @param {string} book.description - The description of the book.
+ */
+  function updateActiveBookDetails(book) {
+    data.list.active.open = true;
+    data.list.blur.src = book.image;
+    data.list.image.src = book.image;
+    data.list.title.innerText = book.title;
+    data.list.subtitle.innerText = `${authors[book.author]} (${new Date(book.published).getFullYear()})`;
+    data.list.description.innerText = book.description;
+  }
+  
   // Event listener for form submission
   data.search.form.addEventListener('submit', handleFormSubmit);
-
-data.list.button.addEventListener('click', () => {
-    const fragment = document.createDocumentFragment()
-
-    for (const { author, id, image, title } of matches.slice(page * BOOKS_PER_PAGE, (page + 1) * BOOKS_PER_PAGE)) {
-        const element = document.createElement('button')
-        element.classList = 'preview'
-        element.setAttribute('data-preview', id)
-    
-        element.innerHTML = `
-            <img
-                class="preview__image"
-                src="${image}"
-            />
-            
-            <div class="preview__info">
-                <h3 class="preview__title">${title}</h3>
-                <div class="preview__author">${authors[author]}</div>
-            </div>
-        `
-
-        fragment.appendChild(element)
-    }
-
-    data.list.items.appendChild(fragment)
-    page += 1
-})
-
-data.list.items.addEventListener('click', (event) => {
-    const pathArray = Array.from(event.path || event.composedPath())
-    let active = null
-
-    for (const node of pathArray) {
-        if (active) break
-
-        if (node?.dataset?.preview) {
-            let result = null
-    
-            for (const singleBook of books) {
-                if (result) break;
-                if (singleBook.id === node?.dataset?.preview) result = singleBook
-            } 
-        
-            active = result
-        }
-    }
-    
-    if (active) {
-        data.list.active.open = true
-        data.list.blur.src = active.image
-        data.list.image.src = active.image
-        data.list.title.innerText = active.title
-        data.list.subtitle.innerText = `${authors[active.author]} (${new Date(active.published).getFullYear()})`
-        data.list.description.innerText = active.description
-    }
-})
+  data.list.button.addEventListener('click', renderAdditionalBookPreviews);
+  data.list.items.addEventListener('click', handleBookPreviewClick);
 
 document.addEventListener('DOMContentLoaded', function() {
     init(); // init is called after the DOM is fully loaded
