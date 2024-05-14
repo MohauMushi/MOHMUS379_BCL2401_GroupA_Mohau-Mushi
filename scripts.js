@@ -41,6 +41,12 @@ const data = {
     },
   };
 
+//   Created a document fragment, which will be accessible throughout the file
+const searchResultFragment = document.createDocumentFragment();
+const bookListFragment = document.createDocumentFragment();
+const genreFragment = document.createDocumentFragment();
+const authorFragment = document.createDocumentFragment();
+
 let page = 1;
 let matches = books
 
