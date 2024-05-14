@@ -251,72 +251,118 @@ data.settings.form.addEventListener('submit', (event) => {
     data.settings.overlay.open = false
 })
 
-data.search.form.addEventListener('submit', (event) => {
-    event.preventDefault()
-    const formData = new FormData(event.target)
-    const filters = Object.fromEntries(formData)
-    const result = []
 
+/**
+ * Renders an HTML button element representing a book preview.
+ *
+ * @param {Object} book - The book object containing book details.
+ * @param {string} book.id - The unique identifier of the book.
+ * @param {string} book.image - The URL of the book's cover image.
+ * @param {string} book.title - The title of the book.
+ * @param {string} book.author - The identifier of the book's author.
+ * @returns {HTMLButtonElement} The created button element representing the book preview.
+ */
+function renderBookPreview(book) {
+    const element = document.createElement('button');
+    element.classList = 'preview';
+    element.setAttribute('data-preview', book.id);
+    element.innerHTML = `
+      <img class="preview__image" src="${book.image}" />
+      <div class="preview__info">
+        <h3 class="preview__title">${book.title}</h3>
+        <div class="preview__author">${authors[book.author]}</div>
+      </div>
+    `;
+    return element;
+  }
+  
+  /**
+ * Renders the book list by creating book preview elements.
+ *
+ * @param {Object[]} books - An array of book objects.
+ */
+  function renderBooksList(books) {
+    const newItems = document.createDocumentFragment();
     for (const book of books) {
-        let genreMatch = filters.genre === 'any'
-
-        for (const singleGenre of book.genres) {
-            if (genreMatch) break;
-            if (singleGenre === filters.genre) { genreMatch = true }
-        }
-
-        if (
-            (filters.title.trim() === '' || book.title.toLowerCase().includes(filters.title.toLowerCase())) && 
-            (filters.author === 'any' || book.author === filters.author) && 
-            genreMatch
-        ) {
-            result.push(book)
-        }
+      const bookPreviewElement = renderBookPreview(book);
+      newItems.appendChild(bookPreviewElement);
     }
-
-    page = 1;
-    matches = result
-
-    if (result.length < 1) {
-        data.list.message.classList.add('list__message_show')
-    } else {
-        data.list.message.classList.remove('list__message_show')
-    }
-
-    data.list.items.innerHTML = ''
-    const newItems = document.createDocumentFragment()
-
-    for (const { author, id, image, title } of result.slice(0, BOOKS_PER_PAGE)) {
-        const element = document.createElement('button')
-        element.classList = 'preview'
-        element.setAttribute('data-preview', id)
-    
-        element.innerHTML = `
-            <img
-                class="preview__image"
-                src="${image}"
-            />
-            
-            <div class="preview__info">
-                <h3 class="preview__title">${title}</h3>
-                <div class="preview__author">${authors[author]}</div>
-            </div>
-        `
-
-        newItems.appendChild(element)
-    }
-
-    data.list.items.appendChild(newItems)
-    data.list.button.disabled = (matches.length - (page * BOOKS_PER_PAGE)) < 1
-
+    data.list.items.innerHTML = '';
+    data.list.items.appendChild(newItems);
+  }
+  
+  // Function to update the "Show more" button
+  /**
+ * Updates the "Show more" button's content and disabled state.
+ */
+  function updateShowMoreButton() {
+    data.list.button.disabled = matches.length - (page * BOOKS_PER_PAGE) < 1;
     data.list.button.innerHTML = `
-        <span>Show more</span>
-        <span class="list__remaining"> (${(matches.length - (page * BOOKS_PER_PAGE)) > 0 ? (matches.length - (page * BOOKS_PER_PAGE)) : 0})</span>
-    `
-
-    window.scrollTo({top: 0, behavior: 'smooth'});
-    data.search.overlay.open = false
-})
+      <span>Show more</span>
+      <span class="list__remaining">
+        (${matches.length - (page * BOOKS_PER_PAGE) > 0 ? matches.length - (page * BOOKS_PER_PAGE) : 0})
+      </span>
+    `;
+  }
+  
+  /**
+ * Handles the form submission event.
+ *
+ * @param {Event} event - The form submission event.
+ */
+  function handleFormSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const filters = Object.fromEntries(formData);
+    const result = filterBooks(books, filters);
+    matches = result;
+  
+    if (result.length < 1) {
+      data.list.message.classList.add('list__message_show');
+    } else {
+      data.list.message.classList.remove('list__message_show');
+    }
+  
+    page = 1;
+    renderBooksList(result.slice(0, BOOKS_PER_PAGE));
+    updateShowMoreButton();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    data.search.overlay.open = false;
+  }
+  
+  /**
+ * Filters the books based on the provided filters.
+ *
+ * @param {Object[]} books - An array of book objects.
+ * @param {Object} filters - An object containing the filter values.
+ * @param {string} filters.genre - The genre filter value.
+ * @param {string} filters.title - The title filter value.
+ * @param {string} filters.author - The author filter value.
+ * @returns {Object[]} An array of filtered book objects.
+ */
+  function filterBooks(books, filters) {
+    const result = [];
+    for (const book of books) {
+      let genreMatch = filters.genre === 'any';
+      for (const singleGenre of book.genres) {
+        if (genreMatch) break;
+        if (singleGenre === filters.genre) {
+          genreMatch = true;
+        }
+      }
+      if (
+        (filters.title.trim() === '' || book.title.toLowerCase().includes(filters.title.toLowerCase())) &&
+        (filters.author === 'any' || book.author === filters.author) &&
+        genreMatch
+      ) {
+        result.push(book);
+      }
+    }
+    return result;
+  }
+  
+  // Event listener for form submission
+  data.search.form.addEventListener('submit', handleFormSubmit);
 
 data.list.button.addEventListener('click', () => {
     const fragment = document.createDocumentFragment()
