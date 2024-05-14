@@ -56,9 +56,10 @@ let matches = books
 let firstPageResults = [];
 
 /**
- * Extracting the firstPageResults, before the user clicks 'show more' when the page first loads .
- * @param {object} object - This is the object the user wants to extract from the first page.
- * 
+ * Extracts the initial results for the first page load.
+ *
+ * @param {Object[]} object - The array of objects (books) to extract the initial results from.
+ * @returns {Object[]} The array of objects (books) for the first page.
  */
 
 const initialResultsExtraction = (object) => {
@@ -69,8 +70,16 @@ const initialResultsExtraction = (object) => {
 // Calling `initialResultsExtraction` function for the first page load,
 initialResultsExtraction(books);
 
-// `createBook` function 
-
+/**
+ * Creates a book preview element.
+ *
+ * @param {Object} book - The book object containing details for creating the preview.
+ * @param {string} book.author - The author ID of the book.
+ * @param {string} book.id - The unique ID of the book.
+ * @param {string} book.image - The URL of the book's cover image.
+ * @param {string} book.title - The title of the book.
+ * @returns {HTMLButtonElement} The created book preview element.
+ */
 const createBook = ({ author, id, image, title }) => {
     const element = document.createElement('button');
     element.classList = 'preview';
@@ -91,10 +100,11 @@ const createBook = ({ author, id, image, title }) => {
     return element;
 }
 
-/** `renderBookList` loops through the subset of the given object parameter and then `createBook` is called
- * for each book. It then appends the `Book` to the given fragment parameter.
- * @param {object} object - The object that you want to render the book list for. This can be `books` or `searchResults`.
- * 
+/**
+ * Renders the book list by appending book preview elements to a container.
+ *
+ * @param {Object[]} object - The array of objects (books) to render the book list for.
+ * @param {DocumentFragment} container - The document fragment to append the book preview elements to.
  */
 
 const renderBookList = (object, container) => {
@@ -118,7 +128,9 @@ renderBookList(firstPageResults, bookListFragment);
 /********************************* Genre ******************************************/
 
 // Created the createGenreOption function 
-/** Creates the 'all genres' option for the genre dropdown list. */
+/** 
+* Creates the 'all genres' option for the genre dropdown list. 
+*/
 const createGenreOption = () => {
 
      /** `genreOption` it creates and holds a new HTML 'option' element for the
@@ -136,6 +148,9 @@ const createGenreOption = () => {
 // Called the createGenreOption function
 createGenreOption();
 
+/**
+ * Populates the genre dropdown list with all genres.
+ */
 const populateGenre = () =>{
 
   for (const [id, name] of Object.entries(genres)) {
@@ -156,10 +171,12 @@ populateGenre();
 /****************************** Author *****************************************/
 
 // Created the createAuthorOption
-/** Creates the 'all authors' option for the author dropdown list. */
+/**
+* Creates the 'all authors' option for the author dropdown list. 
+*/
 
 const createAuthorOption = () => {
-      /** `authorOption` it creates and holds a new HTML 'option' element for the
+  /** `authorOption` it creates and holds a new HTML 'option' element for the
    *  'All Author' option. This needs to be done separately from the other authors,
    *   because it will have the value of 'any'.
    */
@@ -173,7 +190,9 @@ const createAuthorOption = () => {
 createAuthorOption();
 
 // Created the populateAuthorDropdown function ↓
-/** Populates the author dropdown list with all of the authors. */
+/**
+* Populates the author dropdown list with all of the authors. 
+*/
 const populateAuthorDropdown = () => {
 
     for (const [id, name] of Object.entries(authors)) {
@@ -211,45 +230,90 @@ data.list.button.innerHTML = `
     <span>Show more</span>
     <span class="list__remaining"> (${(matches.length - (page * BOOKS_PER_PAGE)) > 0 ? (matches.length - (page * BOOKS_PER_PAGE)) : 0})</span>
 `
+
+/**
+ * Sets up event listeners for various UI elements.
+ */
 function setupEventListeners() {
     
+  /**
+   * An Event listener for the search cancel button.
+   *
+   * When the search cancel button is clicked, it closes the search overlay.
+   */
 data.search.cancel.addEventListener('click', () => {
     data.search.overlay.open = false
 })
 
+  /**
+   * An Event listener for the settings cancel button.
+   *
+   * When the settings cancel button is clicked, it closes the settings overlay.
+   */
 data.settings.cancel.addEventListener('click', () => {
     data.settings.overlay.open = false
 })
 
+  /**
+   * An Event listener for the header search button.
+   *
+   * When the header search button is clicked, it opens the search overlay
+   * and focuses the search title input field.
+   */
 data.header.search.addEventListener('click', () => {
     data.search.overlay.open = true 
     data.search.title.focus()
 })
 
+  /**
+   * An Event listener for the header settings button.
+   *
+   * When the header settings button is clicked, it opens the settings overlay.
+   */
 data.header.settings.addEventListener('click', () => {
     data.settings.overlay.open = true 
 })
 
+  /**
+   * An Event listener for the close button in the active book details section.
+   *
+   * When the close button is clicked, it closes the active book details section.
+   */
 data.list.close.addEventListener('click', () => {
     data.list.active.open = false
 })
 };
 
-data.settings.form.addEventListener('submit', (event) => {
-    event.preventDefault()
-    const formData = new FormData(event.target)
-    const { theme } = Object.fromEntries(formData)
-
+/**
+ * Updates the theme settings based on the selected option.
+ *
+ * @param {string} theme - The theme option ('night' or 'day').
+ */
+function updateThemeSettings(theme) {
     if (theme === 'night') {
-        document.documentElement.style.setProperty('--color-dark', '255, 255, 255');
-        document.documentElement.style.setProperty('--color-light', '10, 10, 20');
+      document.documentElement.style.setProperty('--color-dark', '255, 255, 255');
+      document.documentElement.style.setProperty('--color-light', '10, 10, 20');
     } else {
-        document.documentElement.style.setProperty('--color-dark', '10, 10, 20');
-        document.documentElement.style.setProperty('--color-light', '255, 255, 255');
+      document.documentElement.style.setProperty('--color-dark', '10, 10, 20');
+      document.documentElement.style.setProperty('--color-light', '255, 255, 255');
     }
-    
-    data.settings.overlay.open = false
-})
+  }
+  
+  /**
+   * Handles the form submission event for the settings form.
+   *
+   * @param {Event} event - The form submission event.
+   */
+  function handleSettingsFormSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const { theme } = Object.fromEntries(formData);
+    updateThemeSettings(theme);
+    data.settings.overlay.open = false;
+  }
+  
+  // Event listener for settings form submission
+  data.settings.form.addEventListener('submit', handleSettingsFormSubmit);
 
 
 /**
