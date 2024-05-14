@@ -155,20 +155,44 @@ populateGenre();
 
 /****************************** Author *****************************************/
 
-const authorsHtml = document.createDocumentFragment()
-const firstAuthorElement = document.createElement('option')
-firstAuthorElement.value = 'any'
-firstAuthorElement.innerText = 'All Authors'
-authorsHtml.appendChild(firstAuthorElement)
+// Created the createAuthorOption
+/** Creates the 'all authors' option for the author dropdown list. */
 
-for (const [id, name] of Object.entries(authors)) {
-    const element = document.createElement('option')
-    element.value = id
-    element.innerText = name
-    authorsHtml.appendChild(element)
+const createAuthorOption = () => {
+      /** `authorOption` it creates and holds a new HTML 'option' element for the
+   *  'All Author' option. This needs to be done separately from the other authors,
+   *   because it will have the value of 'any'.
+   */
+    const authorOption = document.createElement('option');
+    authorOption.value = 'any';
+    authorOption.innerText = 'All Authors';
+    authorFragment.appendChild(authorOption);
 }
 
-data.search.authors.appendChild(authorsHtml)
+// Calling the createAuthorOption function
+createAuthorOption();
+
+// Created the populateAuthorDropdown function ↓
+/** Populates the author dropdown list with all of the authors. */
+const populateAuthorDropdown = () => {
+
+    for (const [id, name] of Object.entries(authors)) {
+         /** `authorElement` creates and holds an HTML 'option' element for the dropdown list
+    * that contains the author id and author name. */
+        const authorElement = document.createElement('option');
+        authorElement.value = id;
+        authorElement.innerText = name;
+        authorFragment.appendChild(authorElement);
+    }
+    
+    data.search.authors.appendChild(authorFragment);
+}
+
+// Called the populateAuthorDropDown
+populateAuthorDropdown();
+
+/*******************************************************************************************/
+
 
 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     data.settings.theme.value = 'night'
