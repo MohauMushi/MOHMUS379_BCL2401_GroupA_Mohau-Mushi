@@ -69,14 +69,12 @@ const initialResultsExtraction = (object) => {
 // Calling `initialResultsExtraction` function for the first page load,
 initialResultsExtraction(books);
 
+// `createBook` function 
 
-
-const starting = document.createDocumentFragment()
-
-for (const { author, id, image, title } of matches.slice(0, BOOKS_PER_PAGE)) {
-    const element = document.createElement('button')
-    element.classList = 'preview'
-    element.setAttribute('data-preview', id)
+const createBook = ({ author, id, image, title }) => {
+    const element = document.createElement('button');
+    element.classList = 'preview';
+    element.setAttribute('data-preview', id);
 
     element.innerHTML = `
         <img
@@ -88,12 +86,16 @@ for (const { author, id, image, title } of matches.slice(0, BOOKS_PER_PAGE)) {
             <h3 class="preview__title">${title}</h3>
             <div class="preview__author">${authors[author]}</div>
         </div>
-    `
+    `;
 
-    starting.appendChild(element)
+    return element;
 }
 
-data.list.items.appendChild(starting)
+
+
+
+/******************************************************************************/
+
 
 const genreHtml = document.createDocumentFragment()
 const firstGenreElement = document.createElement('option')
