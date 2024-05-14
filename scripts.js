@@ -115,23 +115,45 @@ const renderBookList = (object, container) => {
 
 renderBookList(firstPageResults, bookListFragment);
 
-/******************************************************************************/
+/********************************* Genre ******************************************/
 
+// Created the createGenreOption function 
+/** Creates the 'all genres' option for the genre dropdown list. */
+const createGenreOption = () => {
 
-const genreHtml = document.createDocumentFragment()
-const firstGenreElement = document.createElement('option')
-firstGenreElement.value = 'any'
-firstGenreElement.innerText = 'All Genres'
-genreHtml.appendChild(firstGenreElement)
+     /** `genreOption` it creates and holds a new HTML 'option' element for the
+   *  'All Genres' option. This needs to be done separately from the other genres,
+   *   because it will have the value of 'any'.
+   */
+    const genreOption = document.createElement('option');
+    
+    genreOption.value = 'any';
+    
+    genreOption.innerText = 'All Genres';
 
-for (const [id, name] of Object.entries(genres)) {
-    const element = document.createElement('option')
-    element.value = id
-    element.innerText = name
-    genreHtml.appendChild(element)
+    genreFragment.appendChild(genreOption);
 }
+// Called the createGenreOption function
+createGenreOption();
 
-data.search.genres.appendChild(genreHtml)
+const populateGenre = () =>{
+
+  for (const [id, name] of Object.entries(genres)) {
+    /** `genreElement` creates and holds an HTML 'option' element for our dropdown list
+    * that contains the genre id and genre name. */
+    const genreElement = document.createElement('option');
+    genreElement.value = id;
+    genreElement.innerText = name;
+    genreFragment.appendChild(genreElement);
+ }
+
+data.search.genres.appendChild(genreFragment);
+};
+
+// Called the populateGenre
+populateGenre();
+
+/****************************** Author *****************************************/
 
 const authorsHtml = document.createDocumentFragment()
 const firstAuthorElement = document.createElement('option')
