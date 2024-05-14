@@ -211,7 +211,8 @@ data.list.button.innerHTML = `
     <span>Show more</span>
     <span class="list__remaining"> (${(matches.length - (page * BOOKS_PER_PAGE)) > 0 ? (matches.length - (page * BOOKS_PER_PAGE)) : 0})</span>
 `
-
+function setupEventListeners() {
+    
 data.search.cancel.addEventListener('click', () => {
     data.search.overlay.open = false
 })
@@ -232,6 +233,7 @@ data.header.settings.addEventListener('click', () => {
 data.list.close.addEventListener('click', () => {
     data.list.active.open = false
 })
+};
 
 data.settings.form.addEventListener('submit', (event) => {
     event.preventDefault()
@@ -371,3 +373,11 @@ data.list.items.addEventListener('click', (event) => {
         data.list.description.innerText = active.description
     }
 })
+
+document.addEventListener('DOMContentLoaded', function() {
+    init(); // init is called after the DOM is fully loaded
+  });
+
+  function init() {
+    setupEventListeners();
+  }
