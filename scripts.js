@@ -91,8 +91,29 @@ const createBook = ({ author, id, image, title }) => {
     return element;
 }
 
+/** `renderBookList` loops through the subset of the given object parameter and then `createBook` is called
+ * for each book. It then appends the `Book` to the given fragment parameter.
+ * @param {object} object - The object that you want to render the book list for. This can be `books` or `searchResults`.
+ * 
+ */
 
+const renderBookList = (object, container) => {
+    /** The below for...of loop loops through the given object and calls the `createBook` function for each book in the object. */
+    for (const {author, id, image, title} of object) {
+        // The book it's hold the element for the createBook function for each book.
+        const book = createBook({
+            author,
+            image, 
+            id,
+            title,
+        });
+        container.appendChild(book);
 
+        data.list.items.appendChild(container);
+    }
+};
+
+renderBookList(firstPageResults, bookListFragment);
 
 /******************************************************************************/
 
