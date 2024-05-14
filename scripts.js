@@ -50,6 +50,27 @@ const authorFragment = document.createDocumentFragment();
 let page = 1;
 let matches = books
 
+// Declared `firstPageResults` variable which will hold the 36 books for the initial page load.
+
+/** `firstPageResults` is a array of the initial 36 `BOOKS_PER_PAGE` from the user's search before they click 'show more'. */
+let firstPageResults = [];
+
+/**
+ * Extracting the firstPageResults, before the user clicks 'show more' when the page first loads .
+ * @param {object} object - This is the object the user wants to extract from the first page.
+ * 
+ */
+
+const initialResultsExtraction = (object) => {
+    // Slicing the object based on the `BOOKS_PER_PAGE` to get the initial 36 results
+    firstPageResults = object.slice(0, BOOKS_PER_PAGE);
+    return firstPageResults;
+}
+// Calling `initialResultsExtraction` function for the first page load,
+initialResultsExtraction(books);
+
+
+
 const starting = document.createDocumentFragment()
 
 for (const { author, id, image, title } of matches.slice(0, BOOKS_PER_PAGE)) {
