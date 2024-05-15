@@ -1,60 +1,151 @@
 import { books, authors, genres, BOOKS_PER_PAGE } from "./data.js";
 
-import { data, searchResultFragment, bookListFragment, genreFragment, authorFragment } from './element.js';
-
+import {
+  data,
+  bookListFragment,
+  genreFragment,
+  authorFragment,
+} from "./element.js";
 
 let page = 1;
-let matches = books;
 
-// Declared `firstPageResults` variable which will hold the 36 books for the initial page load.
-
-/** `firstPageResults` is a array of the initial 36 `BOOKS_PER_PAGE` from the user's search before they click 'show more'. */
-let firstPageResults = [];
-
+// Book class
 /**
- * Extracts the initial results for the first page load.
- *
- * @param {Object[]} object - The array of objects (books) to extract the initial results from.
- * @returns {Object[]} The array of objects (books) for the first page.
+ * Represents a book with its properties.
  */
+class Book {
+  /**
+   * Create a new Book instance.
+   * @param {string} id - The unique ID of the book.
+   * @param {string} title - The title of the book.
+   * @param {string} author - The author ID of the book.
+   * @param {string} genre - The genre ID of the book.
+   * @param {string} image - The URL of the book's cover image.
+   * @param {string} description - The description of the book.
+   */
+  constructor(id, title, author, genre, image, description) {
+    this.id = id;
+    this.title = title;
+    this.author = author;
+    this.genre = genre;
+    this.image = image;
+    this.description = description;
+  }
+}
 
-const initialResultsExtraction = (object) => {
-  // Slicing the object based on the `BOOKS_PER_PAGE` to get the initial 36 results
-  firstPageResults = object.slice(0, BOOKS_PER_PAGE);
-  return firstPageResults;
+// Author class
+/**
+ * Represents an author with their properties and associated books.
+ */
+class Author {
+  /**
+   * Create a new Author instance.
+   * @param {string} id - The unique ID of the author.
+   * @param {string} name - The name of the author.
+   * @param {Book[]} books - An array of books authored by this author (optional).
+   */
+  constructor(id, name, books = []) {
+    this.id = id;
+    this.name = name;
+    this.books = books;
+  }
+}
+
+// Genre class
+/**
+ * Represents a genre with its properties and associated books.
+ */
+class Genre {
+  /**
+   * Creates a new Genre instance.
+   * @param {string} id - The unique ID of the genre.
+   * @param {string} name - The name of the genre.
+   * @param {Book[]} books - An array of books belonging to this genre (optional).
+   */
+  constructor(id, name, books = []) {
+    this.id = id;
+    this.name = name;
+    this.books = books;
+  }
+}
+
+// Populating objects using the provided data
+/**
+ * Populates the book, author, and genre objects using the provided data.
+ * @returns {Object} An object containing arrays of book, author, and genre objects.
+ */
+const populateObjects = () => {
+  const bookObjects = [];
+  const authorObjects = {};
+  const genreObjects = {};
+
+  // Create Book objects
+  books.forEach((book) => {
+    const { id, title, author, genre, image, description } = book;
+    bookObjects.push(new Book(id, title, author, genre, image, description));
+  });
+
+  // Create Author objects
+  if (Array.isArray(authors)) {
+    authors.forEach((author, index) => {
+      const authorBooks = bookObjects.filter((book) => book.author === index);
+      authorObjects[index] = new Author(index, author, authorBooks);
+    });
+  } else {
+    Object.entries(authors).forEach(([id, name]) => {
+      const authorBooks = bookObjects.filter(
+        (book) => book.author === parseInt(id)
+      );
+      authorObjects[id] = new Author(id, name, authorBooks);
+    });
+  }
+
+  // Create Genre objects
+  if (Array.isArray(genres)) {
+    genres.forEach((genre, index) => {
+      const genreBooks = bookObjects.filter((book) => book.genre === index);
+      genreObjects[index] = new Genre(index, genre, genreBooks);
+    });
+  } else {
+    Object.entries(genres).forEach(([id, name]) => {
+      const genreBooks = bookObjects.filter(
+        (book) => book.genre === parseInt(id)
+      );
+      genreObjects[id] = new Genre(id, name, genreBooks);
+    });
+  }
+
+  return { bookObjects, authorObjects, genreObjects };
 };
-// Calling `initialResultsExtraction` function for the first page load,
-initialResultsExtraction(books);
+
+const { bookObjects, authorObjects, genreObjects } = populateObjects();
+
+// rendering books previews
+let matches = bookObjects;
 
 /**
  * Creates a book preview element.
  *
- * @param {Object} book - The book object containing details for creating the preview.
- * @param {string} book.author - The author ID of the book.
- * @param {string} book.id - The unique ID of the book.
- * @param {string} book.image - The URL of the book's cover image.
- * @param {string} book.title - The title of the book.
+ * @param {Object}  - The book object containing details for creating the preview.
+ * @param {string} author - The author ID of the book.
+ * @param {string} id - The unique ID of the book.
+ * @param {string} image - The URL of the book's cover image.
+ * @param {string} title - The title of the book.
  * @returns {HTMLButtonElement} The created book preview element.
  */
-const createBook = ({ author, id, image, title }) => {
+function renderBookPreview({ author, id, image, title }) {
   const element = document.createElement("button");
   element.classList = "preview";
   element.setAttribute("data-preview", id);
-
   element.innerHTML = `
-        <img
-            class="preview__image"
-            src="${image}"
-        />
-        
-        <div class="preview__info">
-            <h3 class="preview__title">${title}</h3>
-            <div class="preview__author">${authors[author]}</div>
-        </div>
+      <img class="preview__image" src="${image}" />
+      <div class="preview__info">
+        <h3 class="preview__title">${title}</h3>
+        <div class="preview__author">${authors[author]}</div>
+      </div>
     `;
-
   return element;
-};
+}
 
 /**
  * Renders the book list by appending book preview elements to a container.
@@ -62,24 +153,15 @@ const createBook = ({ author, id, image, title }) => {
  * @param {Object[]} object - The array of objects (books) to render the book list for.
  * @param {DocumentFragment} container - The document fragment to append the book preview elements to.
  */
-
 const renderBookList = (object, container) => {
-  /** The below for...of loop loops through the given object and calls the `createBook` function for each book in the object. */
-  for (const { author, id, image, title } of object) {
-    // The book it's hold the element for the createBook function for each book.
-    const book = createBook({
-      author,
-      image,
-      id,
-      title,
-    });
+  for (const { author, id, image, title } of object.slice(0, BOOKS_PER_PAGE)) {
+    const book = renderBookPreview({ author, image, id, title });
     container.appendChild(book);
-
-    data.list.items.appendChild(container);
   }
+  data.list.items.appendChild(container);
 };
 
-renderBookList(firstPageResults, bookListFragment);
+renderBookList(books, bookListFragment);
 
 /********************************* Genre ******************************************/
 
@@ -273,30 +355,6 @@ function handleSettingsFormSubmit(event) {
 data.settings.form.addEventListener("submit", handleSettingsFormSubmit);
 
 /**
- * Renders an HTML button element representing a book preview.
- *
- * @param {Object} book - The book object containing book details.
- * @param {string} book.id - The unique identifier of the book.
- * @param {string} book.image - The URL of the book's cover image.
- * @param {string} book.title - The title of the book.
- * @param {string} book.author - The identifier of the book's author.
- * @returns {HTMLButtonElement} The created button element representing the book preview.
- */
-function renderBookPreview(book) {
-  const element = document.createElement("button");
-  element.classList = "preview";
-  element.setAttribute("data-preview", book.id);
-  element.innerHTML = `
-      <img class="preview__image" src="${book.image}" />
-      <div class="preview__info">
-        <h3 class="preview__title">${book.title}</h3>
-        <div class="preview__author">${authors[book.author]}</div>
-      </div>
-    `;
-  return element;
-}
-
-/**
  * Renders the book list by creating book preview elements.
  *
  * @param {Object[]} books - An array of book objects.
@@ -383,7 +441,7 @@ function filterBooks(books, filters) {
 }
 
 /**
- * Function it Renders additional book previews on the page.
+ * Function to Render additional book previews on the page.
  *
  * This function is responsible for appending new book preview elements to the page
  * based on the current page number and the matches array.
@@ -402,7 +460,7 @@ function renderAdditionalBookPreviews() {
 }
 
 /**
- * Functions it Handles the click event on book previews.
+ * Function to Handles the click event on book previews.
  *
  * @param {Event} event - The click event object.
  */
@@ -428,7 +486,7 @@ function handleBookPreviewClick(event) {
 
 // Function to update active book details
 /**
- * Updates the active book details section with the provided book information.
+ * Updating the active book details section with the provided book information.
  *
  * @param {Object} book - The book object containing the details to be displayed.
  * @param {string} book.image - The URL of the book's cover image.
